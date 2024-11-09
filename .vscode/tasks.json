@@ -1,0 +1,37 @@
+{
+  // See https://go.microsoft.com/fwlink/?LinkId=733558
+  // for the documentation about the tasks.json format
+  "version": "2.0.0",
+  "tasks": [
+      {
+          "label": ".NET Core Build Solution",
+          "group": {
+              "kind": "build",
+              "isDefault": true
+          },
+          "command": "dotnet",
+          "type": "process",
+          "args": [
+              "build",
+              "/property:GenerateFullPaths=true",
+              "/consoleloggerparameters:NoSummary",
+              "${workspaceFolder}/TelegramInboxImporter.sln"
+          ],
+          "presentation": {
+              "reveal": "always",
+              "panel": "new"
+          },
+          "problemMatcher": "$msCompile"
+      },
+      {
+          "label": ".NET Core Clean Solution",
+          "command": "dotnet",
+          "type": "process",
+          "args": [
+              "clean",
+              "${workspaceFolder}/TelegramInboxImporter.sln"
+          ],
+          "problemMatcher": []
+      }
+  ]
+}
