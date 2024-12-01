@@ -1,6 +1,6 @@
 using CredentialManagement;
 
-namespace TelegramInboxImporter;
+namespace TelegramInboxImporter.Common;
 
 public static class CredentialManager
 {
