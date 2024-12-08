@@ -8,5 +8,5 @@ Console.WriteLine("Hello, World!");
 
 var telegramClient = new TelegramClient();
 
-await telegramClient.PrintMessages();
+var messages = await telegramClient.GetMessagesHistoryAsync("Inbox", minId: 0);
 

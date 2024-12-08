@@ -4,7 +4,7 @@ using WTelegram;
 
 namespace TelegramInboxImporter.Clients;
 
-public class TelegramClient
+public class TelegramClient : ITelegramClient
 {
 
     /*
@@ -18,8 +18,6 @@ public class TelegramClient
         5. How to track imported messages? Persist offsetId and next time try to start from it
     */
 
-    private const string inboxChat = "Inbox";
-
     private Client _client;
 
     public TelegramClient()
@@ -27,60 +25,37 @@ public class TelegramClient
         _client = new Client(Config);
     }
 
-    public async Task PrintMessages()
+    public async Task<IEnumerable<Message>> GetMessagesHistoryAsync(string chatName, int minId = 0)
     {
+        if (string.IsNullOrWhiteSpace(chatName))
+        {
+            throw new ArgumentNullException(nameof(chatName), "Argument cannot be null or empty");
+        }
+
         var user = await _client.LoginUserIfNeeded();
 
         Console.WriteLine($"Logged in as {user.username ?? $"{user.first_name} {user.last_name}"}");
 
         var allChats = await _client.Messages_GetAllChats();
-        InputPeer inboxChatPeer = allChats.chats
+        InputPeer chatPeer = allChats.chats
             .FirstOrDefault(kvp =>
-                kvp.Value.Title.StartsWith(inboxChat, StringComparison.CurrentCultureIgnoreCase) &&
+                kvp.Value.Title.StartsWith(chatName, StringComparison.CurrentCultureIgnoreCase) &&
                 kvp.Value.IsActive
             )
-            .Value ?? throw new InvalidOperationException($"'{inboxChat}' chat doesn't exist");
+            .Value ?? throw new InvalidOperationException($"'{chatName}' chat doesn't exist");
 
-        for (var offsetId = 0; ;)
+        var history = await _client.Messages_GetHistory(peer: chatPeer, min_id: minId);
+
+        var result = new List<Message>();
+        foreach (var msgBase in history.Messages)
         {
-            var messages = await _client.Messages_GetHistory(peer: inboxChatPeer, offset_id: offsetId);
-            if (messages.Messages.Length == 0)
+            if (msgBase is Message msg)
             {
-                break;
+                result.Add(msg);
             }
-
-            foreach (var msgBase in messages.Messages)
-            {
-                var from = messages.UserOrChat(msgBase.From ?? msgBase.Peer);
-                if (msgBase is Message msg)
-                {
-                    Console.WriteLine($"{from}> {msg.message} :: {msg.media}");
-
-                    // TL.MessageMediaWebPage
-                    // TL.MessageMediaPhoto
-                    if (msg.media is null)
-                    {
-                        continue;
-                    }
-
-                    try
-                    {
-                        var proc = msg.media.GetMediaProcessor(_client);
-                        await proc.ProcessAsync(msg.message);
-                    }
-                    catch (Exception ex)
-                    {
-                        Console.WriteLine(ex.Message);
-                    }
-                }
-                else if (msgBase is MessageService ms)
-                {
-                    // TODO: Log service message
-                    Console.WriteLine($"{from}> [{ms.action.GetType().Name[13..]}]");
-                }
-            }
-            offsetId = messages.Messages[^1].ID;
         }
+        return result;
+
     }
 
     private static string? Config(string what)

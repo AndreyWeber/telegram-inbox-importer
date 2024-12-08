@@ -1,4 +1,4 @@
-namespace TelegramInboxImporter.Services;
+namespace TelegramInboxImporter.Services.MessageMediaProcessors;
 
 public interface IMessageMediaProcessor
 {
