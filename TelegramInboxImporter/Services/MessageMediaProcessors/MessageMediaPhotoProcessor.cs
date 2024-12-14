@@ -1,5 +1,5 @@
+using TelegramInboxImporter.Clients;
 using TL;
-using WTelegram;
 
 namespace TelegramInboxImporter.Services.MessageMediaProcessors;
 
@@ -7,7 +7,7 @@ public class MessageMediaPhotoProcessor : MessageMediaProcessorBase, IMessageMed
 {
     private readonly Photo _photo;
 
-    public MessageMediaPhotoProcessor(Client client, MessageMediaPhoto messageMedia) : base(client)
+    public MessageMediaPhotoProcessor(ITelegramClient client, MessageMediaPhoto messageMedia) : base(client)
     {
         if (messageMedia.photo is not Photo photo)
         {

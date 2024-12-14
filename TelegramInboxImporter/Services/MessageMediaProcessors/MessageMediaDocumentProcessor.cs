@@ -1,5 +1,5 @@
+using TelegramInboxImporter.Clients;
 using TL;
-using WTelegram;
 
 namespace TelegramInboxImporter.Services.MessageMediaProcessors;
 
@@ -7,7 +7,7 @@ public class MessageMediaDocumentProcessor : MessageMediaProcessorBase, IMessage
 {
     private readonly Document _document;
 
-    public MessageMediaDocumentProcessor(Client client, MessageMediaDocument messageMedia) : base(client)
+    public MessageMediaDocumentProcessor(ITelegramClient client, MessageMediaDocument messageMedia) : base(client)
     {
         if (messageMedia.document is not Document document)
         {

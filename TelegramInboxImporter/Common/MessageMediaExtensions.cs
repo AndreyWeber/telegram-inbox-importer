@@ -1,13 +1,12 @@
-using TelegramInboxImporter.Services;
+using TelegramInboxImporter.Clients;
 using TelegramInboxImporter.Services.MessageMediaProcessors;
 using TL;
-using WTelegram;
 
 namespace TelegramInboxImporter.Common;
 
 public static class MessageMediaExtensions
 {
-    public static IMessageMediaProcessor GetMediaProcessor(this MessageMedia messageMedia, Client client)
+    public static IMessageMediaProcessor GetMediaProcessor(this MessageMedia messageMedia, ITelegramClient client)
     {
         return messageMedia switch
         {

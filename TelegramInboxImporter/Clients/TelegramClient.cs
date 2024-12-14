@@ -18,12 +18,20 @@ public class TelegramClient : ITelegramClient
         5. How to track imported messages? Persist offsetId and next time try to start from it
     */
 
-    private Client _client;
+    private readonly Client _client;
+
+    // public delegate void ProgressCallback(long transmitted, long totalSize);
 
     public TelegramClient()
     {
         _client = new Client(Config);
     }
+
+    public async Task<Storage_FileType> DownloadFileAsync(Photo photo, Stream outputStream, PhotoSizeBase? photoSize = null, Client.ProgressCallback? progress = null) =>
+        await _client.DownloadFileAsync(photo, outputStream, photoSize, progress);
+
+    public async Task<string> DownloadFileAsync(Document document, Stream outputStream, PhotoSizeBase? thumbSize = null, Client.ProgressCallback? progress = null) =>
+        await _client.DownloadFileAsync(document, outputStream, thumbSize, progress);
 
     public async Task<IEnumerable<Message>> GetMessagesHistoryAsync(string chatName, int minId = 0)
     {

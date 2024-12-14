@@ -1,10 +1,11 @@
+using TelegramInboxImporter.Clients;
 using TL;
 using WTelegram;
 
 namespace TelegramInboxImporter.Services.MessageMediaProcessors;
 
 public class MessageMediaContactProcessor(
-    Client client,
+    ITelegramClient client,
     MessageMediaContact messageMedia) : MessageMediaProcessorBase(client), IMessageMediaProcessor
 {
     private MessageMediaContact _messageMedia = messageMedia;

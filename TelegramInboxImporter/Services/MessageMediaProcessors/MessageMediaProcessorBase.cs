@@ -1,9 +1,8 @@
-using TL;
-using WTelegram;
+using TelegramInboxImporter.Clients;
 
 namespace TelegramInboxImporter.Services.MessageMediaProcessors;
 
-public abstract class MessageMediaProcessorBase(Client client)
+public abstract class MessageMediaProcessorBase(ITelegramClient client)
 {
-    protected Client _client = client;
+    protected ITelegramClient _client = client;
 }

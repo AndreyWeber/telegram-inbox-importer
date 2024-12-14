@@ -2,24 +2,28 @@ using Microsoft.Extensions.Logging;
 using TelegramInboxImporter.Clients;
 using TelegramInboxImporter.Common;
 using TL;
+using WTelegram;
 
 namespace TelegramInboxImporter.Services;
 
 public class MessagesProcessorService(ILogger<MessagesProcessorService> logger, ITelegramClient telegramClient) : IMessagesProcessorService
 {
+    private const int DefaultMinId = 0;
+
     private readonly ILogger<MessagesProcessorService> _logger = logger;
     private readonly ITelegramClient _telegramClient = telegramClient;
 
     public async Task ProcessAsync()
     {
-        // read minId from persistent storage
+        // Read minId from persistent storage
+        var minId = DefaultMinId;
 
         const string chatName = "Inbox";
 
         IEnumerable<Message> messages = [];
         try
         {
-            messages = await _telegramClient.GetMessagesHistoryAsync(chatName, minId: 0);
+            messages = await _telegramClient.GetMessagesHistoryAsync(chatName, minId);
         }
         catch (Exception ex)
         {
@@ -31,8 +35,9 @@ public class MessagesProcessorService(ILogger<MessagesProcessorService> logger, 
             // Create markdown content
             // var from = history.UserOrChat(msgBase.From ?? msgBase.Peer);
             var messageText = message.message;
+            var messageMedia = message.media;
 
-            if (message.media is null)
+            if (messageMedia is null)
             {
                 // Save markdown content
                 continue;
@@ -40,7 +45,7 @@ public class MessagesProcessorService(ILogger<MessagesProcessorService> logger, 
 
             try
             {
-                // var proc = message.media.GetMediaProcessor(_telegramClient);
+                var proc = messageMedia.GetMediaProcessor(_telegramClient);
                 // await proc.ProcessAsync(messageText);
             }
             catch (Exception ex)
@@ -50,12 +55,13 @@ public class MessagesProcessorService(ILogger<MessagesProcessorService> logger, 
 
             // else if (msgBase is MessageService ms)
             // {
-            //     // TODO: Log service message
             //     Console.WriteLine($"{from}> [{ms.action.GetType().Name[13..]}]");
             // }
             // offsetId = messages.Messages[^1].ID;
         }
-        var offestId = messages.First().ID;
+
+        // Save minId into persistent storage
+        var offestId = messages.FirstOrDefault<Message>()?.ID ?? DefaultMinId;
     }
 
 }
