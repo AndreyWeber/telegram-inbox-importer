@@ -1,3 +1,5 @@
+using System.Configuration;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using TelegramInboxImporter.Clients;
 using TelegramInboxImporter.Common;
@@ -6,62 +8,68 @@ using WTelegram;
 
 namespace TelegramInboxImporter.Services;
 
-public class MessagesProcessorService(ILogger<MessagesProcessorService> logger, ITelegramClient telegramClient) : IMessagesProcessorService
+public class MessagesProcessorService : IMessagesProcessorService
 {
-    private const int DefaultMinId = 0;
+    private readonly ILogger<MessagesProcessorService> _logger;
+    private readonly ITelegramClient _telegramClient;
+    private readonly string _chatName;
 
-    private readonly ILogger<MessagesProcessorService> _logger = logger;
-    private readonly ITelegramClient _telegramClient = telegramClient;
+    public MessagesProcessorService(
+        ILogger<MessagesProcessorService> logger,
+        IConfiguration configuration,
+        ITelegramClient telegramClient)
+    {
+        _logger = logger;
+        _telegramClient = telegramClient;
+        _chatName = configuration.GetValue<string>(IMessagesProcessorService.TelegramChatNameConfigNode)
+            ?? throw new ConfigurationErrorsException(
+                $"Invalid value for '{IMessagesProcessorService.TelegramChatNameConfigNode}' config node");
+    }
 
     public async Task ProcessAsync()
     {
-        // Read minId from persistent storage
-        var minId = DefaultMinId;
-
-        const string chatName = "Inbox";
+        // TODO: Read minId from persistent storage
+        var minId = IMessagesProcessorService.DefaultMinId;
 
         IEnumerable<Message> messages = [];
         try
         {
-            messages = await _telegramClient.GetMessagesHistoryAsync(chatName, minId);
+            messages = await _telegramClient.GetMessagesHistoryAsync(_chatName, minId);
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Failed to get messages from Telegram chat {0}", chatName);
+            _logger.LogError(ex, "Failed to get messages from Telegram chat {chatName}", _chatName);
         }
 
         foreach (var message in messages)
         {
-            // Create markdown content
+            // TODO: Create markdown content
             // var from = history.UserOrChat(msgBase.From ?? msgBase.Peer);
             var messageText = message.message;
             var messageMedia = message.media;
 
             if (messageMedia is null)
             {
-                // Save markdown content
+                // TODO: Save markdown content and continue, because there is no media
                 continue;
             }
 
             try
             {
-                var proc = messageMedia.GetMediaProcessor(_telegramClient);
-                // await proc.ProcessAsync(messageText);
+                var processor = messageMedia.GetMediaProcessor(_telegramClient);
+                // TODO: Make ProcessAsync to return modified markdown content
+                await processor.ProcessAsync(messageText);
+                // TODO: Save modified markdown content
             }
             catch (Exception ex)
             {
-                Console.WriteLine(ex.Message);
+                _logger.LogError(ex, "Failed to get a MediaProcessor for the Telegram chat '{chatName}'", _chatName);
             }
-
-            // else if (msgBase is MessageService ms)
-            // {
-            //     Console.WriteLine($"{from}> [{ms.action.GetType().Name[13..]}]");
-            // }
-            // offsetId = messages.Messages[^1].ID;
         }
 
-        // Save minId into persistent storage
-        var offestId = messages.FirstOrDefault<Message>()?.ID ?? DefaultMinId;
+        // TODO: Save minId into persistent storage
+        var offestId = messages.FirstOrDefault<Message>()?.ID
+            ?? IMessagesProcessorService.DefaultMinId;
     }
 
 }
