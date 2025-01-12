@@ -6,11 +6,13 @@ namespace TelegramInboxImporter.Services.MessageMediaProcessors;
 
 public class MessageMediaContactProcessor(
     ITelegramClient client,
-    MessageMediaContact messageMedia) : MessageMediaProcessorBase(client), IMessageMediaProcessor
+    MessageMediaContact messageMedia,
+    MessagesProcessorSettings settings
+) : MessageMediaProcessorBase(client, settings), IMessageMediaProcessor
 {
     private MessageMediaContact _messageMedia = messageMedia;
 
-    public async Task ProcessAsync(string markdownContent)
+    public async Task<string> ProcessAsync(string markdownContent)
     {
         // // Extract contact details
         // string phoneNumber = contact.phone_number;
@@ -26,5 +28,7 @@ public class MessageMediaContactProcessor(
         // string fileName = $"{firstName}_{lastName}_contact.txt";
         // await File.WriteAllTextAsync(fileName, contactInfo);
         // Console.WriteLine($"Contact information saved to: {fileName}");
+
+        return string.Empty;
     }
 }

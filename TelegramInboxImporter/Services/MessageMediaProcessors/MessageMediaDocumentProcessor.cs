@@ -7,7 +7,11 @@ public class MessageMediaDocumentProcessor : MessageMediaProcessorBase, IMessage
 {
     private readonly Document _document;
 
-    public MessageMediaDocumentProcessor(ITelegramClient client, MessageMediaDocument messageMedia) : base(client)
+    public MessageMediaDocumentProcessor(
+        ITelegramClient client,
+        MessageMediaDocument messageMedia,
+        MessagesProcessorSettings settings
+    ) : base(client, settings)
     {
         if (messageMedia.document is not Document document)
         {
@@ -17,7 +21,7 @@ public class MessageMediaDocumentProcessor : MessageMediaProcessorBase, IMessage
         _document = document;
     }
 
-    public async Task ProcessAsync(string markdownContent)
+    public async Task<string> ProcessAsync(string markdownContent)
     {
         if (markdownContent == null)
         {
@@ -33,5 +37,7 @@ public class MessageMediaDocumentProcessor : MessageMediaProcessorBase, IMessage
 
         using var fileStream = File.Create(fileName);
         await _client.DownloadFileAsync(_document, fileStream);
+
+        return string.Empty;
     }
 }

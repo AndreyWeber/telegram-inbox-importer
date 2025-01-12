@@ -21,9 +21,9 @@ public class Startup(IConfiguration configuration)
     {
         services.Configure<MessagesProcessorSettings>(Configuration.GetSection("MessagesProcessorSettings"));
 
-        services.AddTransient<Func<ITelegramClient, MessageMedia, IMessageMediaProcessor>>(
-            serviceProvider => (telegramClient, messageMedia) =>
-                MessageMediaProcessorFactory.GetMediaProcessor(telegramClient, messageMedia)
+        services.AddTransient<Func<ITelegramClient, MessageMedia, MessagesProcessorSettings, IMessageMediaProcessor>>(
+            serviceProvider => (telegramClient, messageMedia, settings) =>
+                MessageMediaProcessorFactory.GetMediaProcessor(telegramClient, messageMedia, settings)
         );
 
         services.AddSingleton<ITelegramClient, TelegramClient>();

@@ -6,18 +6,22 @@ namespace TelegramInboxImporter.Services;
 
 public static class MessageMediaProcessorFactory
 {
-    public static IMessageMediaProcessor GetMediaProcessor(ITelegramClient client, MessageMedia messageMedia)
+    public static IMessageMediaProcessor GetMediaProcessor(
+        ITelegramClient client,
+        MessageMedia messageMedia,
+        MessagesProcessorSettings settings
+    )
     {
         return messageMedia switch
         {
             MessageMediaDocument messageMediaDocument => new MessageMediaDocumentProcessor(
-                client, messageMediaDocument),
+                client, messageMediaDocument, settings),
             MessageMediaPhoto messageMediaPhoto => new MessageMediaPhotoProcessor(
-                client, messageMediaPhoto),
+                client, messageMediaPhoto, settings),
             MessageMediaWebPage messageMediaWebPage => new MessageMediaWebPageProcessor(
-                client, messageMediaWebPage),
+                client, messageMediaWebPage, settings),
             MessageMediaContact messageMediaContact => new MessageMediaContactProcessor(
-                client, messageMediaContact),
+                client, messageMediaContact, settings),
             null => throw new ArgumentNullException(nameof(messageMedia), "Argument cannot be null"),
             _ => throw new InvalidOperationException($"Unknown MessageMedia type: {messageMedia.GetType()}")
         };

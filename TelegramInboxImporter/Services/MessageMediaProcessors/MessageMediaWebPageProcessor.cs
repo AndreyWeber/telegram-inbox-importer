@@ -5,11 +5,13 @@ namespace TelegramInboxImporter.Services.MessageMediaProcessors;
 
 public class MessageMediaWebPageProcessor(
     ITelegramClient client,
-    MessageMediaWebPage messageMedia) : MessageMediaProcessorBase(client), IMessageMediaProcessor
+    MessageMediaWebPage messageMedia,
+    MessagesProcessorSettings settings
+) : MessageMediaProcessorBase(client, settings), IMessageMediaProcessor
 {
     private MessageMediaWebPage _messageMedia = messageMedia;
 
-    public async Task ProcessAsync(string markdownContent)
+    public async Task<string> ProcessAsync(string markdownContent)
     {
         // // Extract web page details
         // string title = webPage.title ?? "No Title";
@@ -27,5 +29,7 @@ public class MessageMediaWebPageProcessor(
         //     string photoFilePath = await SavePhotoAsync(client, photo);
         //     Console.WriteLine($"Downloaded web page photo to: {photoFilePath}");
         // }
+
+        return string.Empty;
     }
 }

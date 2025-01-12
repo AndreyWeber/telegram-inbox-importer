@@ -7,7 +7,10 @@ public class MessageMediaPhotoProcessor : MessageMediaProcessorBase, IMessageMed
 {
     private readonly Photo _photo;
 
-    public MessageMediaPhotoProcessor(ITelegramClient client, MessageMediaPhoto messageMedia) : base(client)
+    public MessageMediaPhotoProcessor(
+        ITelegramClient client,
+        MessageMediaPhoto messageMedia,
+        MessagesProcessorSettings settings) : base(client, settings)
     {
         if (messageMedia.photo is not Photo photo)
         {
@@ -17,25 +20,34 @@ public class MessageMediaPhotoProcessor : MessageMediaProcessorBase, IMessageMed
         _photo = photo;
     }
 
-    public async Task ProcessAsync(string markdownContent)
+    public async Task<string> ProcessAsync(string markdownContent)
     {
         if (markdownContent == null)
         {
             throw new ArgumentNullException(nameof(markdownContent), "Argument cannot be null");
         }
 
-        const string savePath = @"C:\Users\andre\OneDrive\Documents\Obsidian Vault\files";
+        // Prepare output image file path
+        var fileSavePath = Path.Combine(_settings.VaultPath, _settings.FilesFolder);
+        var photoIdFileName = Path.Combine(fileSavePath, $"{_photo.id}.jpg");
 
-        var fileName = Path.Combine(savePath, $"{_photo.id}.jpg");
-
-        using var fileStream = File.Create(fileName);
+        // Download output file from the Telegram MessageMedia
+        using var fileStream = File.Create(photoIdFileName);
         var fileType = await _client.DownloadFileAsync(_photo, fileStream);
         fileStream.Close();
 
+        // Rename file with name taken from the MessageMedia
+        var messageMediaFileName = string.Empty;
         if (fileType is not Storage_FileType.unknown and not Storage_FileType.partial)
         {
-            var newFileName = Path.Combine(savePath, $"{_photo.id}.{fileType}");
-            File.Move(fileName, newFileName, true);
+            messageMediaFileName = Path.Combine(fileSavePath, $"{_photo.id}.{fileType}");
+            File.Move(photoIdFileName, messageMediaFileName, true);
         }
+
+        // Modify markdown content by adding output file path
+        var modifiedMarkdownContent = $"{markdownContent}\r\n[[" +
+            $"{(string.IsNullOrWhiteSpace(messageMediaFileName) ? photoIdFileName : messageMediaFileName)}]]";
+
+        return modifiedMarkdownContent;
     }
 }
